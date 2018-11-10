@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Chat program</title>
+        <meta charset="UTF-8">
+        
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <link rel="stylesheet" type="text/css" 
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+		
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <style>
+            #nameForm {
+                margin-top: 50px;
+            }
+            #setDataButton {
+                margin-top: 40px;
+                width: 60%;
+                font-size: 24px;
+            }
+		</style>
+	</head>
+	<body>
+        <form id="nameForm" action="chat.php" method="POST">
+            <h1>Enter your name:</h1>
+            <input type="text" id="nameEntry" name="username">
+            <h1>Pick a color:</h1>
+            <select name="nameColor">
+                <option value="black">Black</option>
+                <option value="pink">Pink</option>
+                <option value="red">Red</option>
+                <option value="green">Green</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+                <option value="orange">Orange</option>
+                <option value="yellow">Yellow</option>
+            </select>
+            <br />
+            <button type="submit" id="setDataButton">Set Name</button>
+        </form>
+    </body>
+    <script>
+    </script>
+</html>
