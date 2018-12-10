@@ -10,7 +10,7 @@
     if ($conn->connect_error) {
         die("<p>Connection failed: " . $conn->connect_error . "</p>");
     }
-    $sql_query = "SELECT username FROM " . usernameTableName . " WHERE 1";
+    $sql_query = "SELECT username FROM " . usernameTableName;
     $result = mysqli_query($conn, $sql_query);
 	if(!$result){
         echo "Failed sql query: " . $sql_query;

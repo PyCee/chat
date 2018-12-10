@@ -55,34 +55,24 @@
 	</body>
 	
 
-	<script src="ajaxInterface.js"></script>
+	<script src="cookieInterface.js" charset="utf-8"></script>
+	<script src="ajaxInterface.js" charset="utf-8"></script>
 	<script>
 		var sendRequest;
 		var updateChatRequest;
 		var updateNameListRequest;
 		var lastTimestamp = "99999999";
 		var currentNameList = [];
-
-		var username = "DEFAULT_USERNAME";
-		
-		function setName(){
-			username = "<?php 
-				if(isset($_POST['username']) &&	
-					isset($_POST['nameColor']) &&
-					strlen($_POST['username']) > 0) {
-					$name = "<span style='color: " . $_POST['nameColor'] . "'>" . $_POST['username'] . "</span>";
-					echo addslashes($name); 
-				} else {
-					echo "DEFAULT_USERNAME";
-				}
-			?>";
-			
-			if(username === "DEFAULT_USERNAME"){
-				window.location.replace("index.html");
-			} else {
-				addSelfToNameList();
-			}
+		var username = getCookie("username");
+		if(username == null || username.length == 0){
+			var alertString = "username is null or username.length is 0: ";
+			//alert(alertString + "'" + username + "'");
+			window.location.replace("index.html");
+		} else {
+			setCookie("username", "");
+			addSelfToNameList();
 		}
+		
 		
 		// jquery to run function on button press
 		setInterval(checkForNewMessage, 200);
@@ -90,7 +80,6 @@
 		setInterval(updateNameList, 1000);
 
 		$(document).ready(function(){
-			setName();
 			
 			$("#chatButton").click(function(){
 				sendMessage();

@@ -32,6 +32,5 @@
 	if(!$result){
 		echo "Failed sql query: " . $sql_query;
 	}
-	
 	$conn->close();
 ?>

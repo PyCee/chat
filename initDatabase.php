@@ -33,7 +33,7 @@
 	// sql to create table
 	$sql = "CREATE TABLE IF NOT EXISTS " . chatTableName . " (
 		id INT(8) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-		username VARCHAR(256) NOT NULL,
+		username VARCHAR(512) NOT NULL,
 		timestamp VARCHAR(64),
 		message VARCHAR(1024) NOT NULL
 	)";

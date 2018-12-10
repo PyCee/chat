@@ -1,7 +1,6 @@
 <?php
     $name = $_POST["username"];
 
-    
 	$ms = microtime(true);
 	$ms = floor(($ms - floor($ms)) * 1000);
 	$timestamp = date("Y:m:d:H:i:s:") . $ms;

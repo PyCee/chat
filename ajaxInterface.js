@@ -40,10 +40,10 @@ function newMessageCallback() {
         var messageString = updateChatRequest.responseText;
         var messages = JSON.parse(messageString);
         if(messages.length > 0){
-            chatDisplay = document.getElementById("chatDisplay");
             lastTimestamp = messages[messages.length - 1].timestamp;
             for(var i = 0; i < messages.length; ++i){
-                addChatMessage(messages[i].username + ": " + messages[i].message);
+				var recievedMessage = messages[i].username + ": " + messages[i].message;
+                addChatMessage(recievedMessage);
             }
         }
     }
@@ -64,7 +64,6 @@ function updateNameListCallback(){
         // Has a user entered the chat
         for(var i = 0; i < names.length; i++){
             if(!currentNameList.includes(names[i])){
-
                 currentNameList.push(names[i]);
 
                 // Output event only if the entered the chat after the user
@@ -89,7 +88,11 @@ function updateNameListCallback(){
         
         var displayString = "";
         for(var i = 0; i < names.length; ++i) {
-            displayString += "<p style='margin: 0px;'>" + currentNameList[i] + "</p>";
+			displayString += "<div ";
+			if(currentNameList[i] === username){
+				displayString += " style='background-color: #ddd;'";
+			}
+			displayString += ">" + currentNameList[i] + "</div>";
         }
         document.getElementById("nameList").innerHTML = displayString;
     }
