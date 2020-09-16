@@ -1,128 +1,102 @@
-function addChatMessage(htmlString){
-    chatDisplay.innerHTML += "<p style='margin: 0px;'>" + htmlString + "</p>";
+function addChatMessage(message){
+    chatDisplay.innerHTML += message;
     chatDisplay.scrollTop = chatDisplay.scrollHeight;
 }
-function sendMessage () {
-    var messageEntry = document.getElementById("messageEntry");
-    var message = messageEntry.value;
-    if(message.length == 0){
-        return;
+function handleEvent(event){
+    switch(event.type){
+        case "user_joined":
+            addChatMessage("<p style='margin: 0px;'>" + 
+                event.username + " has joined the chat</p>");
+            break;
+        case "user_left":
+            addChatMessage("<p style='margin: 0px;'>" + 
+                event.username + " has left the chat</p>");
+            break;
+        case "message_sent":
+            addChatMessage("<p style='margin: 0px;'>" + 
+                event.username + ": " + event.message + "</p>");
+            break;
+        default:
+            console.log("Unrecognized event type: '" + event.type);
+            break;
     }
-    messageEntry.value = "";
-
-    sendRequest = new XMLHttpRequest();
-    
-    sendRequest.onreadystatechange = function () {
-        if((sendRequest.readyState == 4) && (sendRequest.status == 200)) {
-            if(sendRequest.responseText.length != 0) {
-                console.log(sendRequest.responseText);
-            }
-        }
-    };
-    
-    sendRequest.open("POST", "sendMessage.php", true);
-    sendRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    sendRequest.send("username=" + username + "&message="+message);
-    //console.log("Sent: " + username + " : " + message);
+    // The event list is ordered by timestamp ASC, 
+    //   so the last event processed will be the most recent
+    lastEventTimestamp = event.timestamp;
 }
-
-function checkForNewMessage () {
-    updateChatRequest = new XMLHttpRequest();
-    updateChatRequest.onreadystatechange = newMessageCallback;
-    
-    updateChatRequest.open("POST", "checkForNewMessages.php", true);
-    updateChatRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    updateChatRequest.send("lastTimestamp="+lastTimestamp);
-    //console.log("Sent update request");
-}
-function newMessageCallback() {
-    if ((updateChatRequest.readyState == 4) && (updateChatRequest.status == 200)) {
-        var messageString = updateChatRequest.responseText;
-        var messages = JSON.parse(messageString);
-        if(messages.length > 0){
-            lastTimestamp = messages[messages.length - 1].timestamp;
-            for(var i = 0; i < messages.length; ++i){
-				var recievedMessage = messages[i].username + ": " + messages[i].message;
-                addChatMessage(recievedMessage);
-            }
+function ajaxHandleNewEvents(timestamp){
+    $.ajax({
+        url: "getNewEvents.php",
+        type: "post",
+        data: "timestamp="+timestamp,
+        dataType: "json"
+    }).done(function(response, status, XHR){
+        for(var key in response){
+            handleEvent(response[key]);
         }
-    }
+    }).fail(function(response, status, XHR){
+        console.error("Failed to get new events: " + response);
+    });
 }
-
-function updateNameList() {
-    updateNameListRequest = new XMLHttpRequest();
-    updateNameListRequest.onreadystatechange = updateNameListCallback;
-    
-    updateNameListRequest.open("POST", "nameQuery.php", true);
-    updateNameListRequest.send();
+function ajaxEnterChat(username){
+    $.ajax({
+        url: "enterChat.php",
+        type: "post",
+        data: "username="+username
+    }).done(function(response, status, XHR){
+        lastEventTimestamp = response;
+    }).fail(function(response, status, XHR){
+        console.error("Failed to enter chat: " + response);
+    });
 }
-function updateNameListCallback(){
-    if ((updateNameListRequest.readyState == 4) && (updateNameListRequest.status == 200)) {
-        var response = updateNameListRequest.responseText;
-        var names = JSON.parse(response);
-        
-        // Has a user entered the chat
-        for(var i = 0; i < names.length; i++){
-            if(!currentNameList.includes(names[i])){
-                currentNameList.push(names[i]);
-
-                // Output event only if the entered the chat after the user
-                var selfNameIndex = currentNameList.indexOf(username);
-                if(currentNameList.indexOf(names[i], selfNameIndex+1) > 0){
-                    var arriveMessage = "<span style='color: grey;'>" + 
-                        names[i] + " has joined the chat</span>";
-                    addChatMessage(arriveMessage);
-                }
-            }
-        }
-
-        // Has a user left the chat
-        for(var i = currentNameList.length - 1; i >= 0 ; i--){
-            if(!names.includes(currentNameList[i])){
-                var leaveMessage = "<span style='color: grey;'>" + 
-                    currentNameList[i] + " has left the chat</span>";
-                currentNameList.splice(i, 1);
-                addChatMessage(leaveMessage);
-            }
-        }
-        
+function ajaxLeaveChat(username){
+    $.ajax({
+        url: "leaveChat.php",
+        type: "post",
+        data: "username="+username,
+        async: false
+    }).fail(function(response, status, XHR){
+        console.error("Failed to leave chat: " + response);
+    });
+}
+function ajaxSendMessage(username, message) {
+    $.ajax({
+        url: "sendMessage.php",
+        type: "post",
+        data: "username="+username+"&message="+message
+    }).fail(function(response, status, XHR){
+        console.error("Failed to send message: " + response);
+    });
+}
+function ajaxUpdateUserList(){
+    $.ajax({
+        url: "getUserList.php",
+        type: "post",
+        dataType: "json"
+    }).done(function(response, status, XHR){
         var displayString = "";
-        for(var i = 0; i < names.length; ++i) {
-			displayString += "<div ";
-			if(currentNameList[i] === username){
-				displayString += " style='background-color: #ddd;'";
-			}
-			displayString += ">" + currentNameList[i] + "</div>";
+        for(key in response){
+			displayString += "<div>" + response[key]['username'] + "</div>";
         }
         document.getElementById("nameList").innerHTML = displayString;
-    }
+    }).fail(function(response, status, XHR){
+        console.error("Failed to get user list: " + response);
+    });
 }
-
-function addSelfToNameList() {
-    var addSelfRequest = new XMLHttpRequest();
-    addSelfRequest.onreadystatechange = function(){
-        if((addSelfRequest.readyState == 4) && (addSelfRequest.status == 200)) {
-            if(addSelfRequest.responseText.length != 0) {
-                lastTimestamp = addSelfRequest.responseText;
-            }
+function ajaxQueryUserActive(username) {
+    $.ajax({
+        url: "isUserActive.php",
+        type: "post",
+        data: "username="+username
+    }).done(function(response, status, XHR){
+        if(response == 1){
+            $('#usernameInUseMessageBox').show();
+            usernameInUse = true;
+        } else {
+            $('#usernameInUseMessageBox').hide();
+            usernameInUse = false;
         }
-    };
-    addSelfRequest.open("POST", "addSelf.php", true);
-    addSelfRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    addSelfRequest.send("username="+username);
-}
-function removeSelfFromNameList() {
-    var removeSelfRequest = new XMLHttpRequest();
-    removeSelfRequest.onreadystatechange = function(){
-        if((removeSelfRequest.readyState == 4) && (removeSelfRequest.status == 200)) {
-            if(removeSelfRequest.responseText.length != 0) {
-                console.log(removeSelfRequest.responseText);
-            }
-        }
-    };
-
-    // Leave this synchronous so teardown waits for this to send
-    removeSelfRequest.open("POST", "removeUser.php", false);
-    removeSelfRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    removeSelfRequest.send("username="+username);
+    }).fail(function(response, status, XHR){
+        console.error("Failed to query user active: " + response);
+    });
 }

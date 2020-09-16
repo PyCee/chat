@@ -4,7 +4,7 @@ function setCookie(cname, cvalue) {
     d.setTime(d.getTime() + (60*1000));
     var expiresString = "expires=" + d.toUTCString() + ";";
 	var pathString = "path=/;";
-    document.cookie = cookieString + expiresString + pathString;
+    document.cookie = cookieString + expiresString + pathString + "samesite=Strict;";
 }
 function getCookie(cname) {
     var name = cname + "=";

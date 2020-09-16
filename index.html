@@ -7,8 +7,8 @@
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <link rel="stylesheet" type="text/css" 
-            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		
         <link rel="stylesheet" type="text/css" href="style.css">
         <style>
@@ -31,7 +31,6 @@
 	<body>
         <h1>Enter your name:</h1>
         <input type="text" id="nameEntry" name="username">
-		<!--
         <h1>Pick a color:</h1>
         <select name="nameColor">
             <option value="black">Black</option>
@@ -43,7 +42,6 @@
             <option value="orange">Orange</option>
             <option value="yellow">Yellow</option>
         </select>
-		-->
         <br />
         <button type="submit" id="setDataButton">Set Name</button>
 		<div id="usernameInUseMessageBox" class="alert alert-danger" role="alert">
@@ -51,48 +49,23 @@
 		</div>
     </body>
 	<script src="cookieInterface.js"></script>
+	<script src="ajaxInterface.js" charset="utf-8"></script>
     <script>
-		var username = "";
 		var usernameInUse = false;
-		var queryNameListRequest;
-		function queryNameList() {
-			queryNameListRequest = new XMLHttpRequest();
-			queryNameListRequest.onreadystatechange = updateNameListCallback;
-			queryNameListRequest.open("POST", "nameQuery.php", true);
-			queryNameListRequest.send();
-		}
-		function updateNameListCallback(){
-			if ((queryNameListRequest.readyState == 4) && (queryNameListRequest.status == 200)) {
-				var response = queryNameListRequest.responseText;
-				var names = JSON.parse(response);
-				// For each name
-				var foundUsername = false;
-				for(var i = 0; i < names.length; i++){
-					if(username == names[i]) {
-						foundUsername = true;
-						break;
-					}
-				}
-				if(foundUsername){
-					$('#usernameInUseMessageBox').show();
-					usernameInUse = true;
-				} else {
-					$('#usernameInUseMessageBox').hide();
-					usernameInUse = false;
-				}
-			}
+
+		function getUsername(){
+			return document.getElementById("nameEntry").value;
 		}
 		function enterName () {
-			if(!usernameInUse && username.length > 0) {
-				setCookie("username", username);
+			if(!usernameInUse && getUsername().length > 0) {
+				setCookie("name", getUsername());
 				window.location.replace("chat.html");
 			}
 		}
 		$(document).ready(function(){
 			$('#usernameInUseMessageBox').hide();
 			$("#nameEntry").keyup(function(){
-				username = document.getElementById("nameEntry").value;
-				queryNameList();
+				ajaxQueryUserActive(getUsername());
 			});
 			$("#nameEntry").keypress(function(e){
   				if(e.keyCode == 13){

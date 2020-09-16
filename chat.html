@@ -7,8 +7,8 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css">
         <link rel="stylesheet" type="text/css" 
-            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 		
         <link rel="stylesheet" type="text/css" href="style.css">
 		<style>
@@ -26,6 +26,7 @@
 			#nameList {
 			}
 			#chatDisplay {
+				font-size: 18px;
 			}
 			#messageEntry {
 				width: 90%;
@@ -39,10 +40,10 @@
 				<h1>Chat</h1>
 			</section>
 			<section class="row">
-				<div class="col-md-5 col-sm-12">
+				<div class="col-sm-4 col-12">
 					<div id="nameList" class="dataList"></div>
 				</div>
-				<div class="col-md-7 col-sm-12">
+				<div class="col-sm-8 col-12">
 					<div id="chatDisplay" class="dataList"></div>
 					<input type="text" id="messageEntry" placeholder="Type message here">
 					<button id="chatButton">Send message</button>
@@ -54,43 +55,54 @@
 		</footer>
 	</body>
 	
-
 	<script src="cookieInterface.js" charset="utf-8"></script>
 	<script src="ajaxInterface.js" charset="utf-8"></script>
 	<script>
-		var sendRequest;
-		var updateChatRequest;
-		var updateNameListRequest;
-		var lastTimestamp = "99999999";
-		var currentNameList = [];
-		var username = getCookie("username");
-		if(username == null || username.length == 0){
-			var alertString = "username is null or username.length is 0: ";
-			//alert(alertString + "'" + username + "'");
-			window.location.replace("index.html");
-		} else {
-			setCookie("username", "");
-			addSelfToNameList();
+		var lastEventTimestamp = -1;
+		var username;
+
+		function attemptSubmitMessage(){
+			var message = $("#messageEntry").val();
+			if(message){
+				ajaxSendMessage(username, message);
+				$("#messageEntry").val("");
+			}
 		}
-		
-		
-		// jquery to run function on button press
-		setInterval(checkForNewMessage, 200);
-		updateNameList();
-		setInterval(updateNameList, 1000);
 
 		$(document).ready(function(){
+
+			username = getCookie("name");
+			if(username == null || username.length == 0){
+				// If the cookie did not properly set
+				var alertString = "username is null or username.length is 0: ";
+				alert(alertString + "'" + username + "'");
+				window.location.replace("index.html");
+				return false;
+			} else {
+				// The cookie is good
+				ajaxEnterChat(username);
+				setCookie("username", "");
+			}
+
+			setInterval(function(){
+				if(lastEventTimestamp != -1){
+					ajaxHandleNewEvents(lastEventTimestamp);
+					ajaxUpdateUserList();
+				}
+			}, 200);
 			
 			$("#chatButton").click(function(){
-				sendMessage();
+				attemptSubmitMessage();
 			});
 			$("#messageEntry").keypress(function(e){
-  				if(e.keyCode == 13){
-					sendMessage();
+				// When a key is pressed while focus is on the entry box
+  				if(e.keyCode == 13){ // If the key is 'Enter'
+					attemptSubmitMessage();
 				}
 			});
+			
 			window.onbeforeunload = function(e){
-				removeSelfFromNameList();
+				ajaxLeaveChat(username);
 			};
 		});
 	</script>
